@@ -82,3 +82,20 @@ The application should now be running at http://localhost:3000.
 ### Customization
 - Replace `https://github.com/sidhyaashu/ZERO` with your actual GitHub repository link.
 - Feel free to adjust any section as necessary to better fit your project specifics.
+
+
+
+## Frontend Packages
+ - React: [react](https://vitejs.dev/guide/)
+ - Material-UI: [@mui/material](https://mui.com/material-ui/)
+ - Tailwind CSS: [tailwindcss](https://tailwindcss.com/)
+ - Axios: [axios](https://axios-http.com/docs/intro)
+ - jsPDF: [jspdf](https://parallax.github.io/jsPDF/docs/jsPDF.html)
+ - Framer Motion: [framer-motion](https://www.framer.com/motion/)
+ - QRCode: https://www.npmjs.com/package/qrcode
+
+## Backend Packages
+ - Express: [express](https://expressjs.com/)
+ - json2csv: https://www.npmjs.com/package/json2csv
+ - Faker: https://www.npmjs.com/package/@faker-js/faker
+ - Chance: https://www.npmjs.com/package/chance
