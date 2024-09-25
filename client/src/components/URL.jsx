@@ -1,120 +1,273 @@
-import { useState, useCallback } from 'react';
+// import { useState } from 'react';
+// import axios from 'axios';
+
+// const URLScreenshot = () => {
+//     const [url, setUrl] = useState('');
+//     const [error, setError] = useState('');
+//     const [loading, setLoading] = useState(false);
+
+//     const handleScreenshot = async () => {
+//         setError(''); 
+//         setLoading(true); 
+
+//         try {
+//             const response = await axios.post(
+//                 '/api/take-ss/take-screenshot',
+//                 { url },
+//                 { responseType: 'blob' } 
+//             );
+
+//             const blob = new Blob([response.data], { type: 'image/png' });
+//             const link = document.createElement('a');
+//             link.href = window.URL.createObjectURL(blob);
+//             link.download = 'screenshot.png'; 
+//             link.click();
+//         } catch (err) {
+//             console.error('Error taking screenshot:', err);
+//             setError('Failed to capture screenshot. Please try again.');
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     return (
+//         <div className="App" style={{ padding: '20px', textAlign: 'center' }}>
+//             <h1>URL Screenshot Generator</h1>
+//             <input
+//                 type="text"
+//                 value={url}
+//                 onChange={(e) => setUrl(e.target.value)}
+//                 placeholder="Enter URL"
+//                 style={{ width: '60%', padding: '10px', fontSize: '16px' }}
+//             />
+//             <br />
+//             <button
+//                 onClick={handleScreenshot}
+//                 disabled={loading || !url} 
+//                 style={{
+//                     marginTop: '20px',
+//                     padding: '10px 20px',
+//                     fontSize: '16px',
+//                     cursor: 'pointer',
+//                 }}
+//             >
+//                 {loading ? 'Taking Screenshot...' : 'Download Screenshot'}
+//             </button>
+//             {error && <p style={{ color: 'red' }}>{error}</p>}
+//         </div>
+//     );
+// };
+
+// export default URLScreenshot;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { useState } from 'react';
 import axios from 'axios';
-import CircularProgress from '@mui/material/CircularProgress'; // Import CircularProgress for loading spinner
-import 'tailwindcss/tailwind.css'; // Ensure Tailwind CSS is imported
+import { Button, TextField, CircularProgress, Snackbar, Typography } from '@mui/material';
+import { styled } from '@mui/system';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
+import { useTheme } from '@mui/material/styles';
 
-const URLScreenshotGenerator = () => {
-    const [loading, setLoading] = useState(false);
-    const [urlText, setUrlText] = useState('');
+const Container = styled('div')(({ theme }) => ({
+    padding: '20px',
+    textAlign: 'center',
+    maxWidth: '600px',
+    margin: '0 auto',
+    backgroundColor: '#fff',
+    borderRadius: '8px',
+}));
+
+const StyledButton = styled(Button)(({ theme }) => ({
+    marginTop: '20px',
+    padding: '10px 20px',
+    fontSize: '16px',
+    transition: 'transform 0.2s ease',
+    '&:hover': {
+        transform: 'scale(1.05)',
+    },
+}));
+
+const URLScreenshot = () => {
+    const [url, setUrl] = useState('');
     const [error, setError] = useState('');
-    const [toastVisible, setToastVisible] = useState(false);
-    const [downloadLink, setDownloadLink] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [screenshotPreview, setScreenshotPreview] = useState(null);
+    const [toastOpen, setToastOpen] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+    const [toastSeverity, setToastSeverity] = useState('error');
+    const theme = useTheme();
 
-    // Regex for URL validation
     const isValidUrl = (url) => {
-        const pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
-            '((([a-z\\d]([a-z\\d-]*[a-z\\d])?)\\.)+([a-z]{2,}|[a-z\\d-]{2,}\\.[a-z]{2,})|' + // domain name
-            'localhost|' + // localhost
-            '\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|' + // IP
-            '\\[?[a-fA-F0-9]*:[a-fA-F0-9:]+\\]?)' + // IPv6
-            '(\\:\\d+)?(\\/[-a-z\\d%@_.~+&:]*)*$', 'i'); // port and path
-        return !!pattern.test(url);
+        const regex = /^(https?:\/\/)?([a-z0-9]+[.]){1,2}[a-z]{2,6}(\/.*)?$/i;
+        return regex.test(url);
     };
 
-    const handleButtonClick = useCallback(async () => {
-        if (!urlText) {
-            showToast('URL cannot be empty!');
-            return;
-        }
-        if (!isValidUrl(urlText)) {
-            showToast('Please enter a valid URL!');
-            return;
-        }
-
+    const handleScreenshot = async () => {
         setError('');
         setLoading(true);
-        setDownloadLink('');
+        setScreenshotPreview(null);
+
+        if (!isValidUrl(url)) {
+            setError('Invalid URL');
+            setLoading(false);
+            return;
+        }
 
         try {
-            const response = await axios.post('/api/take-ss/take-screenshot', { url: urlText }, {
-                responseType: 'blob'
-            });
+            const response = await axios.post(
+                '/api/take-ss/take-screenshot',
+                { url },
+                { responseType: 'blob' }
+            );
 
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            setDownloadLink(url);
-            showToast('Screenshot generated successfully!');
-        } catch (error) {
-            console.error('Error generating screenshot:', error);
-            showToast('Failed to generate screenshot. Please try again later.');
+            const blob = new Blob([response.data], { type: 'image/png' });
+            const previewUrl = window.URL.createObjectURL(blob);
+            setScreenshotPreview(previewUrl);
+
+            setToastSeverity('success');
+            setToastMessage('Screenshot captured successfully!');
+            setToastOpen(true);
+        } catch (err) {
+            console.error('Error taking screenshot:', err);
+            setToastSeverity('error');
+            setToastMessage('Failed to capture screenshot. Please try again.');
+            setToastOpen(true);
         } finally {
             setLoading(false);
         }
-    }, [urlText]);
-
-    const showToast = (message) => {
-        setError(message);
-        setToastVisible(true);
-        setTimeout(() => {
-            setToastVisible(false);
-            setError('');
-        }, 3000);
     };
 
-    const handleGenerateNew = useCallback(() => {
-        setUrlText('');
-        setDownloadLink('');
-    }, []);
+    const handleDownload = () => {
+        if (!screenshotPreview) return;
+
+        const link = document.createElement('a');
+        link.href = screenshotPreview;
+        link.download = 'screenshot.png';
+        link.click();
+    };
+
+    const resetForm = () => {
+        setUrl('');
+        setScreenshotPreview(null);
+        setError('');
+    };
+
+    const handleCloseToast = () => {
+        setToastOpen(false);
+    };
 
     return (
-        <div className="flex flex-col items-center justify-center w-full max-w-full p-6 mx-auto">
-            <h1 className="text-3xl font-bold mb-6 text-blue-600">URL To Screenshot</h1>
-            <input
-                type="text"
-                value={urlText}
-                onChange={(e) => setUrlText(e.target.value)}
-                placeholder="Enter URL to capture screenshot"
-                className="w-full p-4 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                aria-label="URL input"
+        <Container>
+            <Typography variant="h4" style={{ marginBottom: '20px', fontFamily: 'Roboto, sans-serif' }}>
+                URL Screenshot Generator
+            </Typography>
+            <TextField
+                label="Enter URL"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://example.com"
+                fullWidth
+                error={Boolean(error)}
+                helperText={error}
+                variant="outlined"
+                style={{ marginBottom: '20px' }}
             />
-            {error && <p className="mb-2 text-red-500">{error}</p>}
-
-            <button
-                onClick={handleButtonClick}
-                disabled={loading}
-                className={`w-full p-4 mb-2 text-white ${loading ? 'bg-gray-400' : 'bg-blue-600'} rounded hover:bg-blue-700 transition duration-200`}
-                aria-label="Generate Screenshot"
-            >
-                {loading ? <CircularProgress size={24} className="inline" /> : 'Generate Screenshot'}
-            </button>
-
-            {downloadLink && (
-                <div className="flex flex-col items-center">
-                    <a
-                        href={downloadLink}
-                        download="screenshot.png"
-                        className="w-full p-4 mt-4 text-white bg-green-600 rounded hover:bg-green-700 transition duration-200"
-                        aria-label="Download Screenshot"
+            {loading ? (
+                <CircularProgress />
+            ) : (
+                <StyledButton
+                    onClick={handleScreenshot}
+                    disabled={!url}
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                >
+                    {loading ? 'Taking Screenshot...' : 'Capture Screenshot'}
+                </StyledButton>
+            )}
+            {screenshotPreview && (
+                <>
+                    <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                        <img
+                            src={screenshotPreview}
+                            alt="Screenshot preview"
+                            style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', boxShadow: theme.shadows[4] }}
+                        />
+                    </div>
+                    <StyledButton
+                        onClick={handleDownload}
+                        variant="outlined"
+                        color="success"
+                        fullWidth
+                        startIcon={<CheckCircleIcon />}
                     >
                         Download Screenshot
-                    </a>
-                    <button
-                        className="w-full p-4 mt-2 text-white bg-gray-600 rounded hover:bg-gray-700 transition duration-200"
-                        onClick={handleGenerateNew}
-                        aria-label="Generate New Screenshot"
+                    </StyledButton>
+                    <StyledButton
+                        onClick={resetForm}
+                        variant="contained"
+                        color="secondary"
+                        fullWidth
+                        style={{ marginTop: '10px' }}
                     >
-                        Generate New Screenshot
-                    </button>
-                </div>
+                        New Screenshot
+                    </StyledButton>
+                </>
             )}
-
-            {/* Toast Notification */}
-            {toastVisible && (
-                <div className="fixed top-4 right-4 p-4 bg-red-500 text-white rounded shadow-md z-10">
-                    {error}
-                </div>
-            )}
-        </div>
+            <Snackbar
+                open={toastOpen}
+                autoHideDuration={3000}
+                onClose={handleCloseToast}
+                message={toastMessage}
+                ContentProps={{
+                    style: {
+                        backgroundColor: toastSeverity === 'error' ? '#f44336' : '#4caf50',
+                        fontSize: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                    },
+                }}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                action={
+                    toastSeverity === 'error' ? <ErrorIcon style={{ marginRight: '8px' }} /> : <CheckCircleIcon />
+                }
+            />
+        </Container>
     );
 };
 
-export default URLScreenshotGenerator;
+export default URLScreenshot;

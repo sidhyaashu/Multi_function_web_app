@@ -1,35 +1,40 @@
 import puppeteer from 'puppeteer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url'; 
+
+// Setup __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const take_ss = async (req, res) => {
     const { url } = req.body;
-
     if (!url) {
-        return res.status(400).json({ error: 'Please provide a valid URL.' });
+        return res.status(400).send('URL is required');
     }
 
     try {
-        const screenshotBuffer = await takeScreenshot(url);
-        res.setHeader('Content-Disposition', 'attachment; filename=screenshot.png');
-        res.setHeader('Content-Type', 'image/png');
-        res.send(screenshotBuffer); // Send buffer directly
+        const browser = await puppeteer.launch({
+            headless: true, 
+            args: ['--no-sandbox', '--disable-setuid-sandbox'], 
+        });
+        const page = await browser.newPage();
+        await page.goto(url, { waitUntil: 'networkidle2' });
+
+        const screenshotPath = path.join(__dirname, 'screenshot.png');
+        await page.screenshot({ path: screenshotPath });
+        await browser.close();
+
+        res.download(screenshotPath, 'screenshot.png', (err) => {
+            if (err) {
+                console.error('Error sending screenshot:', err);
+            }
+            fs.unlinkSync(screenshotPath);
+        });
     } catch (err) {
         console.error('Error taking screenshot:', err);
-        res.status(500).json({ error: 'Failed to take screenshot.' });
+        res.status(500).send('Error taking screenshot');
     }
 };
-
-async function takeScreenshot(url) {
-    const browser = await puppeteer.launch({ headless: true }); // Run in headless mode
-    const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle2' });
-
-    // Take the screenshot as a buffer with the specified type
-    const screenshotBuffer = await page.screenshot({ fullPage: true, type: 'png' });
-    await browser.close();
-
-
-    console.log('Screenshot captured successfully.');
-    return screenshotBuffer; // Return the buffer directly
-}
 
 export default take_ss;
