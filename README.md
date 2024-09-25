@@ -30,8 +30,6 @@ This web application, built with React and Express, offers three main functional
 - [Installation](#installation)
 - [Usage](#usage)
 - [API Endpoints](#api-endpoints)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Features
 
@@ -89,7 +87,6 @@ The application should now be running at http://localhost:3000.
 
 ### Customization
 - Replace `https://github.com/sidhyaashu/ZERO` with your actual GitHub repository link.
-- Feel free to adjust any section as necessary to better fit your project specifics.
 
 
 

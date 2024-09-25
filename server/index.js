@@ -14,7 +14,7 @@ app.use(morgan("tiny"));
 
 
 app.use('/api/gen-data',data_gen) 
-app.use('/api/take-ss',ss_take)
+app.use('/api/take-ss',ss_take);
 
 
 const PORT = process.env.PORT || 5000;

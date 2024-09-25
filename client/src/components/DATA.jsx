@@ -1,6 +1,8 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 import 'tailwindcss/tailwind.css';
 
 const DATA_FIELDS = [
@@ -19,10 +21,10 @@ const DATA = () => {
       return acc;
     }, {})
   );
-  const [numRecords, setNumRecords] = useState(10); // Initialize to 10 instead of 0
+  const [numRecords, setNumRecords] = useState(10);
   const [showButtons, setShowButtons] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [toastVisible, setToastVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isInputValid, setIsInputValid] = useState(true); 
 
@@ -36,7 +38,7 @@ const DATA = () => {
   // Effect to validate numRecords input
   useEffect(() => {
     if (numRecords > 100000) {
-      showToast('The maximum number of records allowed is 100,000.');
+      showSnackbar('The maximum number of records allowed is 100,000.');
       setIsInputValid(false);
     } else {
       setIsInputValid(true); 
@@ -47,7 +49,7 @@ const DATA = () => {
     const isAnyFieldSelected = Object.values(selectedFields).some(Boolean);
     
     if (!isAnyFieldSelected) {
-      showToast('Please select at least one field to generate data.');
+      showSnackbar('Please select at least one field to generate data.');
       return;
     }
 
@@ -72,7 +74,7 @@ const DATA = () => {
       setShowButtons(true);
     } catch (error) {
       console.error('Error generating data:', error);
-      showToast('Error generating data. Please try again later.');
+      showSnackbar('Error generating data. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -88,10 +90,13 @@ const DATA = () => {
     setShowButtons(false);
   }, []);
 
-  const showToast = (message) => {
-    setToastMessage(message);
-    setToastVisible(true);
-    setTimeout(() => setToastVisible(false), 3000);
+  const showSnackbar = (message) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   const fieldCheckboxes = useMemo(() => (
@@ -112,7 +117,7 @@ const DATA = () => {
 
   return (
     <div className="max-w-full mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-blue-600 text-center">Generate Random Data</h1>
+      <h1 className="text-4xl font-bold mb-6 text-blue-700 font-roboto">Generate Random Data</h1>
 
       {!showButtons && (
         <form className="mb-6">
@@ -121,7 +126,7 @@ const DATA = () => {
             type="number"
             value={numRecords}
             onChange={(e) => setNumRecords(Number(e.target.value))}
-            min="1" // Change min to 1
+            min="1"
             max="100000" 
             className={`w-full p-3 border border-gray-300 rounded mb-4 ${!isInputValid ? 'border-red-500' : ''}`} 
             aria-label="Number of records"
@@ -148,9 +153,9 @@ const DATA = () => {
           ) : (
             <button
               onClick={handleGenerateData}
-              className={`bg-green-500 text-white px-6 py-2 rounded-md font-semibold w-full transition duration-200 hover:bg-green-600 ${!isInputValid ? 'opacity-50 cursor-not-allowed' : ''}`} // Disable button when invalid
+              className={`bg-green-500 text-white px-6 py-2 rounded-md font-semibold w-full transition duration-200 hover:bg-green-600 ${!isInputValid ? 'opacity-50 cursor-not-allowed' : ''}`}
               aria-label="Generate Data"
-              disabled={!isInputValid} // Disable button when invalid
+              disabled={!isInputValid}
             >
               Generate Data
             </button>
@@ -158,11 +163,16 @@ const DATA = () => {
         </div>
       )}
 
-      {toastVisible && (
-        <div className="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded-md shadow-lg animate-bounce transition duration-300">
-          {toastMessage}
-        </div>
-      )}
+      <Snackbar 
+        open={snackbarOpen} 
+        autoHideDuration={3000} 
+        onClose={handleSnackbarClose} 
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <MuiAlert onClose={handleSnackbarClose} severity="error" elevation={6} variant="filled">
+          {snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 };

@@ -13,12 +13,14 @@ const QR = () => {
   const [qrText, setQrText] = useState('');
   const [qrCodeUrl, setQrCodeUrl] = useState('');
 
-  const notifySuccess = (msg) => toast.success(msg);
-  const notifyError = (msg) => toast.error(msg);
+  const notify = (msg, type) => {
+    if (type === 'success') toast.success(msg);
+    else toast.error(msg);
+  };
 
   const handleGenerateQRCode = async () => {
     if (!qrText) {
-      notifyError('Please enter valid text to generate a QR code.');
+      notify('Please enter valid text to generate a QR code.', 'error');
       return;
     }
 
@@ -28,12 +30,12 @@ const QR = () => {
     try {
       const url = await QRCode.toDataURL(qrText, { errorCorrectionLevel: 'H' });
       setQrCodeUrl(url);
-      notifySuccess('QR Code generated successfully!');
-      setLoading(false);
+      notify('QR Code generated successfully!', 'success');
       setShowDownload(true);
     } catch (error) {
       console.error(error);
-      notifyError('Error generating QR code. Please try again.');
+      notify('Error generating QR code. Please try again.', 'error');
+    } finally {
       setLoading(false);
     }
   };
@@ -45,7 +47,7 @@ const QR = () => {
     pdf.text('Your QR Code:', 10, 10);
     pdf.addImage(qrCodeUrl, 'JPEG', 10, 20, 180, 180);
     pdf.save('qr-code.pdf');
-    notifySuccess('PDF downloaded successfully!');
+    notify('PDF downloaded successfully!', 'success');
   };
 
   const handleGenerateNew = () => {
@@ -55,10 +57,10 @@ const QR = () => {
   };
 
   return (
-    <div className="flex flex-col items-center min-h-screen w-full max-w-full p-6 mx-auto">
+    <div className="flex flex-col items-center min-h-screen p-6 mx-auto">
       <ToastContainer position="top-center" />
       <h1 className="text-4xl font-bold mb-6 text-blue-700 font-roboto">QR Code Generator</h1>
-      
+
       <TextField
         label="Enter text for QR Code"
         value={qrText}
@@ -70,7 +72,7 @@ const QR = () => {
         variant="outlined"
         className="mb-4"
       />
-      
+
       {!loading && !showDownload && (
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Button
@@ -85,11 +87,7 @@ const QR = () => {
         </motion.div>
       )}
 
-      {loading && (
-        <div className="mt-4">
-          <CircularProgress color="primary" />
-        </div>
-      )}
+      {loading && <CircularProgress color="primary" className="mt-4" />}
 
       {showDownload && (
         <motion.div
@@ -98,16 +96,13 @@ const QR = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          {/* Scaled QR Code */}
           <img 
             src={qrCodeUrl} 
             alt="Generated QR Code" 
             style={{ width: '250px', height: '250px' }} 
             className="mt-4 mb-4 rounded-lg border shadow-lg" 
           />
-          
-          {/* Buttons in a row with space */}
-          <div className="flex flex-row justify-center gap-4">
+          <div className="flex justify-center gap-4">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 variant="contained"
@@ -116,7 +111,7 @@ const QR = () => {
                 className="p-4"
                 style={{ width: '200px' }}  
               >
-                Download QR Code as PDF
+                Download as PDF
               </Button>
             </motion.div>
 
@@ -128,7 +123,7 @@ const QR = () => {
                 className="p-4"
                 style={{ width: '200px' }} 
               >
-                Generate New QR Code
+                Generate New
               </Button>
             </motion.div>
           </div>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { Button, TextField, CircularProgress, Snackbar, Typography } from '@mui/material';
+import { Button, TextField, CircularProgress, Snackbar } from '@mui/material';
 import { styled } from '@mui/system';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
@@ -11,7 +11,6 @@ const Container = styled('div')(({ theme }) => ({
     textAlign: 'center',
     maxWidth: '600px',
     margin: '0 auto',
-    backgroundColor: '#fff',
     borderRadius: '8px',
 }));
 
@@ -25,6 +24,14 @@ const StyledButton = styled(Button)(({ theme }) => ({
     },
 }));
 
+const DownloadButton = styled(StyledButton)(({ theme }) => ({
+    color: '#fff', // Change text color if needed
+    backgroundColor: '#4caf50', // Set the desired color for the download button
+    '&:hover': {
+        backgroundColor: '#45a049', // Optional hover effect
+    },
+}));
+
 const URLScreenshot = () => {
     const [url, setUrl] = useState('');
     const [error, setError] = useState('');
@@ -33,6 +40,7 @@ const URLScreenshot = () => {
     const [toastOpen, setToastOpen] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const [toastSeverity, setToastSeverity] = useState('error');
+    const [showInput, setShowInput] = useState(true); // New state variable
     const theme = useTheme();
 
     const isValidUrl = (url) => {
@@ -44,10 +52,12 @@ const URLScreenshot = () => {
         setError('');
         setLoading(true);
         setScreenshotPreview(null);
+        setShowInput(false); // Hide input field and button
 
         if (!isValidUrl(url)) {
             setError('Invalid URL');
             setLoading(false);
+            setShowInput(true); // Show input field and button again
             return;
         }
 
@@ -88,6 +98,7 @@ const URLScreenshot = () => {
         setUrl('');
         setScreenshotPreview(null);
         setError('');
+        setShowInput(true); // Show input field and button again
     };
 
     const handleCloseToast = () => {
@@ -96,32 +107,34 @@ const URLScreenshot = () => {
 
     return (
         <Container>
-            <Typography variant="h4" style={{ marginBottom: '20px', fontFamily: 'Roboto, sans-serif' }}>
-                URL Screenshot Generator
-            </Typography>
-            <TextField
-                label="Enter URL"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://example.com"
-                fullWidth
-                error={Boolean(error)}
-                helperText={error}
-                variant="outlined"
-                style={{ marginBottom: '20px' }}
-            />
+            <h1 className="text-4xl font-bold mb-6 text-blue-700 font-roboto">URL Screenshot Generator</h1>
+            {showInput && ( // Conditional rendering based on showInput state
+                <TextField
+                    label="Enter URL"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    placeholder="https://example.com"
+                    fullWidth
+                    error={Boolean(error)}
+                    helperText={error}
+                    variant="outlined"
+                    style={{ marginBottom: '20px' }}
+                />
+            )}
             {loading ? (
                 <CircularProgress />
             ) : (
-                <StyledButton
-                    onClick={handleScreenshot}
-                    disabled={!url}
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                >
-                    {loading ? 'Taking Screenshot...' : 'Capture Screenshot'}
-                </StyledButton>
+                showInput && ( // Ensure this button only shows when showInput is true
+                    <StyledButton
+                        onClick={handleScreenshot}
+                        disabled={!url}
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                    >
+                        {loading ? 'Taking Screenshot...' : 'Capture Screenshot'}
+                    </StyledButton>
+                )
             )}
             {screenshotPreview && (
                 <>
@@ -132,15 +145,14 @@ const URLScreenshot = () => {
                             style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', boxShadow: theme.shadows[4] }}
                         />
                     </div>
-                    <StyledButton
+                    <DownloadButton
                         onClick={handleDownload}
                         variant="outlined"
-                        color="success"
                         fullWidth
                         startIcon={<CheckCircleIcon />}
                     >
                         Download Screenshot
-                    </StyledButton>
+                    </DownloadButton>
                     <StyledButton
                         onClick={resetForm}
                         variant="contained"
@@ -165,10 +177,8 @@ const URLScreenshot = () => {
                         alignItems: 'center',
                     },
                 }}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                action={
-                    toastSeverity === 'error' ? <ErrorIcon style={{ marginRight: '8px' }} /> : <CheckCircleIcon />
-                }
+                anchorOrigin={{ vertical: 'top', horizontal: 'right' }} // Change position to top-right
+                action={toastSeverity === 'error' ? <ErrorIcon style={{ marginRight: '8px' }} /> : <CheckCircleIcon />}
             />
         </Container>
     );
