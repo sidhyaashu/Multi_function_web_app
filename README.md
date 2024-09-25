@@ -6,6 +6,9 @@ This web application, built with React and Express, offers three main functional
 2. **Random User Data Generator**: Generate random user data and download it as a CSV file.
 3. **PDF with QR Code Generator**: Convert input information into a PDF containing a QR code.
 
+## Screenshots
+
+![Screenshot of landing page](client/public/images/ss.png)
 
 ## Usage
 1. Website Screenshot Generator: Enter the URL of the website you want to capture and click on "Capture Screenshot." You can download the screenshot after it is generated.
