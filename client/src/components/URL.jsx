@@ -1,14 +1,24 @@
 import { useState } from 'react';
 import domtoimage from 'dom-to-image';
-import { simulateLoading } from "../constants/simulateLoading.js";
+
+const simulateLoading = (duration, callback) => {
+  setTimeout(callback, duration);
+};
 
 const URLScreenshotGenerator = () => {
   const [loading, setLoading] = useState(false);
   const [showDownload, setShowDownload] = useState(false);
   const [urlText, setUrlText] = useState('');
   const [imageData, setImageData] = useState(null);
+  const [error, setError] = useState('');
 
   const handleButtonClick = async () => {
+    if (!urlText) {
+      setError('URL cannot be empty!');
+      return;
+    }
+    
+    setError('');
     setLoading(true);
     setShowDownload(false);
 
@@ -26,9 +36,9 @@ const URLScreenshotGenerator = () => {
   };
 
   const handleGenerateNew = () => {
-    setUrlText(''); 
-    setShowDownload(false); 
-    setImageData(null); 
+    setUrlText('');
+    setShowDownload(false);
+    setImageData(null);
   };
 
   const generateScreenshot = async () => {
@@ -53,13 +63,15 @@ const URLScreenshotGenerator = () => {
 
   return (
     <div className="flex flex-col items-center justify-center w-full max-w-full p-6 mx-auto bg-white">
-      
-      {/* This hidden div is always present but only visible when screenshot is generated */}
-      <div 
-        id="capture" 
-        className={`w-[300px] h-[200px] mb-4 flex items-center justify-center ${showDownload ? 'bg-gray-200' : 'hidden'}`}
+
+      {/* Dynamic Screenshot Preview */}
+      <div
+        id="capture"
+        className={`w-[300px] h-[200px] mb-4 flex items-center justify-center border border-gray-300 ${
+          showDownload ? 'bg-gray-200' : 'hidden'
+        }`}
       >
-        <p>Preview of Screenshot Area</p>
+        <p className="text-center">{urlText || 'Preview of Screenshot Area'}</p>
       </div>
 
       {/* Show input and button only when screenshot is not generated */}
@@ -68,10 +80,12 @@ const URLScreenshotGenerator = () => {
           <input
             type="text"
             value={urlText}
-            onChange={(e) => setUrlText(e.target.value)} 
-            placeholder="Enter URL to simulate (no actual URL loading)"
-            className="w-full p-4 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => setUrlText(e.target.value)}
+            placeholder="Enter URL to simulate"
+            className="w-full p-4 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+          {error && <p className="mb-2 text-red-500">{error}</p>}
+          
           {!loading && (
             <button
               onClick={handleButtonClick}
@@ -80,7 +94,7 @@ const URLScreenshotGenerator = () => {
               Generate Screenshot
             </button>
           )}
-          {loading && <div className="mt-4 text-gray-600">Loading...</div>}
+          {loading && <div className="mt-4 text-gray-600">Generating screenshot...</div>}
         </>
       )}
 

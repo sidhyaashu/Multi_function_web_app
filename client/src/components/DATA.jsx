@@ -1,47 +1,22 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 const DATA_FIELDS = [
-  'id',
-  'name',
-  'email',
-  'phone',
-  'address',
-  'city',
-  'state',
-  'country',
-  'postalCode',
-  'job',
-  'username',
-  'dateOfBirth',
-  'company',
-  'product',
-  'color',
-  'quote',
-  'website',
-  'userAgent',
-  'registrationDate',
-  'isActive',
-  'description',
-  'lastLogin',
-  'favoriteColor',
-  'title',
-  'hobbies',
-  'favoriteNumber',
-  'bio',
-  'interests',
-  'skills',
-  'subscriptionStatus',
+  'id', 'name', 'email', 'phone', 'address', 'city', 'state', 'country', 'postalCode', 'job', 'username',
+  'dateOfBirth', 'company', 'product', 'color', 'quote', 'website', 'userAgent', 'registrationDate', 'isActive',
+  'description', 'lastLogin', 'favoriteColor', 'title', 'hobbies', 'favoriteNumber', 'bio', 'interests', 'skills', 'subscriptionStatus'
 ];
 
 const DATA = () => {
   const [selectedFields, setSelectedFields] = useState(
     DATA_FIELDS.reduce((acc, field) => {
-      acc[field] = true; // Default all fields to selected
+      acc[field] = false; // Default all fields to unselected
       return acc;
     }, {})
   );
 
-  const [showButtons, setShowButtons] = useState(false); // State to manage visibility of buttons
+  const [numRecords, setNumRecords] = useState(10); // Default number of records
+  const [showButtons, setShowButtons] = useState(false);
 
   const handleFieldChange = (field) => {
     setSelectedFields((prevState) => ({
@@ -51,27 +26,29 @@ const DATA = () => {
   };
 
   const handleGenerateData = async () => {
-    const fieldsToExclude = Object.keys(selectedFields).filter((field) => !selectedFields[field]);
-    
-    // Assuming you're using an API endpoint to generate data
-    await fetch('/api/generate-data', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        numRecords: 100, // or any other value based on your needs
+    try {
+      const response = await axios.post('/api/generate-data', {
+        numRecords: numRecords,
         selectedFields: selectedFields,
-      }),
-    });
+      });
 
-    console.log('Data generation triggered with fields:', fieldsToExclude);
-    setShowButtons(true); // Show new buttons after generating data
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'generated_data.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+
+      setShowButtons(true); 
+    } catch (error) {
+      console.error('Error generating data:', error);
+    }
   };
 
   const handleConfirmGeneration = () => {
     console.log("Data generation confirmed. The file will be downloaded.");
-    // Logic to handle CSV file download can be implemented here
   };
 
   const handleCancelGeneration = () => {
@@ -79,10 +56,18 @@ const DATA = () => {
   };
 
   return (
-    <div className="max-w-full mx-auto p-6 bg-white rounded-lg">
+    <div className="max-w-full mx-auto p-6 ">
       <h1 className="text-3xl font-bold text-center mb-6">Generate Random Data</h1>
       <form className={`mb-6 ${showButtons ? 'hidden' : ''}`}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <label className="block text-lg text-gray-700 mb-2">Number of Records:</label>
+        <input
+          type="number"
+          value={numRecords}
+          onChange={(e) => setNumRecords(e.target.value)}
+          min="1"
+          className="w-full p-2 border border-gray-300 rounded mb-4"
+        />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4"> {/* Changed to 4 columns */}
           {DATA_FIELDS.map((field) => (
             <div key={field} className="flex items-center">
               <input
