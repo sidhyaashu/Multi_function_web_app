@@ -1,35 +1,63 @@
-import React, { useState } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import axios from 'axios';
+import CircularProgress from '@mui/material/CircularProgress';
+import 'tailwindcss/tailwind.css';
 
 const DATA_FIELDS = [
-  'id', 'name', 'email', 'phone', 'address', 'city', 'state', 'country', 'postalCode', 'job', 'username',
-  'dateOfBirth', 'company', 'product', 'color', 'quote', 'website', 'userAgent', 'registrationDate', 'isActive',
-  'description', 'lastLogin', 'favoriteColor', 'title', 'hobbies', 'favoriteNumber', 'bio', 'interests', 'skills', 'subscriptionStatus'
+  'id', 'name', 'email', 'phone', 'address', 'city', 'state', 'country', 
+  'postalCode', 'job', 'username', 'dateOfBirth', 'company', 'product', 
+  'color', 'quote', 'website', 'userAgent', 'registrationDate', 
+  'isActive', 'description', 'lastLogin', 'favoriteColor', 
+  'title', 'hobbies', 'favoriteNumber', 'bio', 'interests', 'skills', 
+  'subscriptionStatus'
 ];
 
 const DATA = () => {
   const [selectedFields, setSelectedFields] = useState(
     DATA_FIELDS.reduce((acc, field) => {
-      acc[field] = false; // Default all fields to unselected
+      acc[field] = false;
       return acc;
     }, {})
   );
-
-  const [numRecords, setNumRecords] = useState(10); // Default number of records
+  const [numRecords, setNumRecords] = useState(10); // Initialize to 10 instead of 0
   const [showButtons, setShowButtons] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastVisible, setToastVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [isInputValid, setIsInputValid] = useState(true); 
 
-  const handleFieldChange = (field) => {
+  const handleFieldChange = useCallback((field) => {
     setSelectedFields((prevState) => ({
       ...prevState,
       [field]: !prevState[field],
     }));
-  };
+  }, []);
 
-  const handleGenerateData = async () => {
+  // Effect to validate numRecords input
+  useEffect(() => {
+    if (numRecords > 100000) {
+      showToast('The maximum number of records allowed is 100,000.');
+      setIsInputValid(false);
+    } else {
+      setIsInputValid(true); 
+    }
+  }, [numRecords]);
+
+  const handleGenerateData = useCallback(async () => {
+    const isAnyFieldSelected = Object.values(selectedFields).some(Boolean);
+    
+    if (!isAnyFieldSelected) {
+      showToast('Please select at least one field to generate data.');
+      return;
+    }
+
+    setLoading(true);
     try {
-      const response = await axios.post('/api/generate-data', {
-        numRecords: numRecords,
-        selectedFields: selectedFields,
+      const response = await axios.post('/api/gen-data/generate-data', {
+        numRecords,
+        selectedFields,
+      }, {
+        responseType: 'blob',
       });
 
       const blob = new Blob([response.data], { type: 'text/csv' });
@@ -40,74 +68,101 @@ const DATA = () => {
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
-
-      setShowButtons(true); 
+      window.URL.revokeObjectURL(url);
+      setShowButtons(true);
     } catch (error) {
       console.error('Error generating data:', error);
+      showToast('Error generating data. Please try again later.');
+    } finally {
+      setLoading(false);
     }
+  }, [numRecords, selectedFields]);
+
+  const handleCancelGeneration = useCallback(() => {
+    setSelectedFields(
+      DATA_FIELDS.reduce((acc, field) => {
+        acc[field] = false;
+        return acc;
+      }, {})
+    );
+    setShowButtons(false);
+  }, []);
+
+  const showToast = (message) => {
+    setToastMessage(message);
+    setToastVisible(true);
+    setTimeout(() => setToastVisible(false), 3000);
   };
 
-  const handleConfirmGeneration = () => {
-    console.log("Data generation confirmed. The file will be downloaded.");
-  };
-
-  const handleCancelGeneration = () => {
-    setShowButtons(false); // Hide buttons if canceled
-  };
+  const fieldCheckboxes = useMemo(() => (
+    DATA_FIELDS.map((field) => (
+      <div key={field} className="flex items-center mb-2">
+        <input
+          type="checkbox"
+          id={field}
+          checked={selectedFields[field]}
+          onChange={() => handleFieldChange(field)}
+          className="mr-2 cursor-pointer"
+          aria-label={`Select ${field}`} 
+        />
+        <label htmlFor={field} className="text-sm">{field}</label>
+      </div>
+    ))
+  ), [selectedFields, handleFieldChange]);
 
   return (
-    <div className="max-w-full mx-auto p-6 ">
-      <h1 className="text-3xl font-bold text-center mb-6">Generate Random Data</h1>
-      <form className={`mb-6 ${showButtons ? 'hidden' : ''}`}>
-        <label className="block text-lg text-gray-700 mb-2">Number of Records:</label>
-        <input
-          type="number"
-          value={numRecords}
-          onChange={(e) => setNumRecords(e.target.value)}
-          min="1"
-          className="w-full p-2 border border-gray-300 rounded mb-4"
-        />
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4"> {/* Changed to 4 columns */}
-          {DATA_FIELDS.map((field) => (
-            <div key={field} className="flex items-center">
-              <input
-                type="checkbox"
-                checked={selectedFields[field]}
-                onChange={() => handleFieldChange(field)}
-                id={field}
-                className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label htmlFor={field} className="ml-2 text-lg text-gray-700">{field}</label>
-            </div>
-          ))}
+    <div className="max-w-full mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6 text-blue-600 text-center">Generate Random Data</h1>
+
+      {!showButtons && (
+        <form className="mb-6">
+          <label className="block text-lg text-gray-700 mb-2">Number of Records:</label>
+          <input
+            type="number"
+            value={numRecords}
+            onChange={(e) => setNumRecords(Number(e.target.value))}
+            min="1" // Change min to 1
+            max="100000" 
+            className={`w-full p-3 border border-gray-300 rounded mb-4 ${!isInputValid ? 'border-red-500' : ''}`} 
+            aria-label="Number of records"
+          />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {fieldCheckboxes}
+          </div>
+        </form>
+      )}
+
+      {loading ? (
+        <div className="flex justify-center">
+          <CircularProgress />
         </div>
-      </form>
-      {!showButtons ? (
-        <button
-          onClick={handleGenerateData}
-          className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200"
-        >
-          Generate Data
-        </button>
       ) : (
-        <div className="flex justify-between mt-4">
-          <button
-            onClick={handleConfirmGeneration}
-            className="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-700 transition duration-200 mr-2"
-          >
-            Download CSV
-          </button>
-          <button
-            onClick={handleCancelGeneration}
-            className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-700 transition duration-200"
-          >
-            Generate New Data
-          </button>
+        <div className="flex justify-center mt-4 space-x-4">
+          {showButtons ? (
+            <button
+              onClick={handleCancelGeneration}
+              className="bg-gray-500 text-white px-6 py-2 rounded-md font-semibold transition duration-200 hover:bg-gray-600"
+            >
+              Generate New Data
+            </button>
+          ) : (
+            <button
+              onClick={handleGenerateData}
+              className={`bg-green-500 text-white px-6 py-2 rounded-md font-semibold w-full transition duration-200 hover:bg-green-600 ${!isInputValid ? 'opacity-50 cursor-not-allowed' : ''}`} // Disable button when invalid
+              aria-label="Generate Data"
+              disabled={!isInputValid} // Disable button when invalid
+            >
+              Generate Data
+            </button>
+          )}
         </div>
       )}
-      <p className="text-sm text-gray-500 text-center mt-4">
-        Select the fields you want to include in the generated data.
-      </p>
+
+      {toastVisible && (
+        <div className="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded-md shadow-lg animate-bounce transition duration-300">
+          {toastMessage}
+        </div>
+      )}
     </div>
   );
 };

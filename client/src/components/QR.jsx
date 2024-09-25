@@ -46,7 +46,7 @@ const QR = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full max-w-md p-6 mx-auto bg-white rounded-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+    <div className="flex flex-col items-center justify-center w-full max-w-full p-6 mx-auto  ">
       <h1 className="text-3xl font-bold mb-6 text-blue-600">QR Code Generator</h1>
       <input
         type="text"
@@ -58,9 +58,9 @@ const QR = () => {
       {!loading && !showDownload && (
         <motion.button
           onClick={handleGenerateQRCode}
-          className="w-full p-4 mb-2 text-white bg-blue-600 rounded hover:bg-blue-700 transition duration-200"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          className="w-full p-4 mb-2 text-white bg-blue-600 rounded"
+          whileHover={{ scale: 1.001 }}
+          whileTap={{ scale: 0.99 }}
         >
           Generate QR Code
         </motion.button>
