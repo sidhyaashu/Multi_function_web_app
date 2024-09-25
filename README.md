@@ -8,7 +8,7 @@ This web application, built with React and Express, offers three main functional
 
 ## Screenshots
 
-![Screenshot of landing page](client/public/images/ss.png)
+![Screenshot of landing page](images/ss.png)
 
 ## Usage
 1. Website Screenshot Generator: Enter the URL of the website you want to capture and click on "Capture Screenshot." You can download the screenshot after it is generated.
