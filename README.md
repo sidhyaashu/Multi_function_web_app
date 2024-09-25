@@ -1,14 +1,19 @@
 # Multi-Function Web App
+## Screenshots
+![Screenshot of landing page](images/ss.png)
 
 This web application, built with React and Express, offers three main functionalities:
 
 1. **Website Screenshot Generator**: Capture a screenshot of any website by entering its URL.
+![Screenshot of landing page](images/us.png)
+
 2. **Random User Data Generator**: Generate random user data and download it as a CSV file.
+![Screenshot of landing page](images/rd.png)
+
 3. **PDF with QR Code Generator**: Convert input information into a PDF containing a QR code.
+![Screenshot of landing page](images/qr.png)
 
-## Screenshots
 
-![Screenshot of landing page](images/ss.png)
 
 ## Usage
 1. Website Screenshot Generator: Enter the URL of the website you want to capture and click on "Capture Screenshot." You can download the screenshot after it is generated.
