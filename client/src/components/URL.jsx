@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { Button, TextField, CircularProgress, Snackbar } from '@mui/material';
+import { Button, TextField, CircularProgress, Snackbar, useMediaQuery } from '@mui/material';
 import { styled } from '@mui/system';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
@@ -25,10 +25,10 @@ const StyledButton = styled(Button)(({ theme }) => ({
 }));
 
 const DownloadButton = styled(StyledButton)(({ theme }) => ({
-    color: '#fff', // Change text color if needed
-    backgroundColor: '#4caf50', // Set the desired color for the download button
+    color: '#fff',
+    backgroundColor: '#4caf50',
     '&:hover': {
-        backgroundColor: '#45a049', // Optional hover effect
+        backgroundColor: '#45a049',
     },
 }));
 
@@ -40,8 +40,12 @@ const URLScreenshot = () => {
     const [toastOpen, setToastOpen] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const [toastSeverity, setToastSeverity] = useState('error');
-    const [showInput, setShowInput] = useState(true); // New state variable
+    const [showInput, setShowInput] = useState(true);
     const theme = useTheme();
+
+    const isExtraSmall = useMediaQuery(theme.breakpoints.down('sm'));  // Phones and below
+    const isSmall = useMediaQuery(theme.breakpoints.down('md'));       // Portrait tablets, large phones
+    const isMobileOrTablet = isSmall || isExtraSmall;
 
     const isValidUrl = (url) => {
         const regex = /^(https?:\/\/)?([a-z0-9]+[.]){1,2}[a-z]{2,6}(\/.*)?$/i;
@@ -52,12 +56,12 @@ const URLScreenshot = () => {
         setError('');
         setLoading(true);
         setScreenshotPreview(null);
-        setShowInput(false); // Hide input field and button
+        setShowInput(false);
 
         if (!isValidUrl(url)) {
             setError('Invalid URL');
             setLoading(false);
-            setShowInput(true); // Show input field and button again
+            setShowInput(true);
             return;
         }
 
@@ -98,7 +102,7 @@ const URLScreenshot = () => {
         setUrl('');
         setScreenshotPreview(null);
         setError('');
-        setShowInput(true); // Show input field and button again
+        setShowInput(true);
     };
 
     const handleCloseToast = () => {
@@ -107,8 +111,10 @@ const URLScreenshot = () => {
 
     return (
         <Container>
-            <h1 className="text-4xl font-bold mb-6 text-blue-700 font-roboto">URL Screenshot Generator</h1>
-            {showInput && ( // Conditional rendering based on showInput state
+            <h1 className={`text-4xl font-bold mb-6 ${isMobileOrTablet ? 'text-3xl' : 'text-4xl'} text-blue-700 font-roboto`}>
+                URL Screenshot Generator
+            </h1>
+            {showInput && (
                 <TextField
                     label="Enter URL"
                     value={url}
@@ -119,12 +125,15 @@ const URLScreenshot = () => {
                     helperText={error}
                     variant="outlined"
                     style={{ marginBottom: '20px' }}
+                    InputProps={{
+                        style: { fontSize: isMobileOrTablet ? '14px' : '16px' }, // Adjust font size for input
+                    }}
                 />
             )}
             {loading ? (
                 <CircularProgress />
             ) : (
-                showInput && ( // Ensure this button only shows when showInput is true
+                showInput && (
                     <StyledButton
                         onClick={handleScreenshot}
                         disabled={!url}
@@ -142,7 +151,13 @@ const URLScreenshot = () => {
                         <img
                             src={screenshotPreview}
                             alt="Screenshot preview"
-                            style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', boxShadow: theme.shadows[4] }}
+                            style={{
+                                maxWidth: '100%',
+                                height: 'auto',
+                                borderRadius: '8px',
+                                boxShadow: theme.shadows[4],
+                                maxHeight: isMobileOrTablet ? '300px' : '400px', // Limit image height on mobile
+                            }}
                         />
                     </div>
                     <DownloadButton
@@ -172,7 +187,7 @@ const URLScreenshot = () => {
                 ContentProps={{
                     style: {
                         backgroundColor: toastSeverity === 'error' ? '#f44336' : '#4caf50',
-                        fontSize: '16px',
+                        fontSize: isMobileOrTablet ? '14px' : '16px', // Adjust font size for snackbar
                         display: 'flex',
                         alignItems: 'center',
                     },

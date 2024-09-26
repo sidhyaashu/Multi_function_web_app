@@ -6,6 +6,7 @@ import { CircularProgress, TextField, Button } from '@mui/material';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'fontsource-roboto';
+import { useMediaQuery } from '@mui/material'; // Import useMediaQuery
 
 const QR = () => {
   const [loading, setLoading] = useState(false);
@@ -56,10 +57,15 @@ const QR = () => {
     setShowDownload(false);
   };
 
+  // Media Queries
+  const isExtraSmall = useMediaQuery('(max-width:600px)'); // Phones and below
+  const isSmall = useMediaQuery('(max-width:768px)'); // Portrait tablets, large phones
+  const isMobileOrTablet = isSmall || isExtraSmall;
+
   return (
-    <div className="flex flex-col items-center min-h-screen p-6 mx-auto">
+    <div className={`flex flex-col items-center p-6 mx-auto ${isMobileOrTablet ? 'max-w-xs' : 'max-w-lg'}`}>
       <ToastContainer position="top-center" />
-      <h1 className="text-4xl font-bold mb-6 text-blue-700 font-roboto">QR Code Generator</h1>
+      <h1 className={`text-4xl font-bold mb-6 text-blue-700 ${isMobileOrTablet ? 'text-2xl' : ''}`}>QR Code Generator</h1>
 
       <TextField
         label="Enter text for QR Code"
@@ -71,6 +77,11 @@ const QR = () => {
         margin="normal"
         variant="outlined"
         className="mb-4"
+        InputProps={{
+          style: {
+            fontSize: isMobileOrTablet ? '0.9rem' : '1rem',
+          },
+        }}
       />
 
       {!loading && !showDownload && (
@@ -81,6 +92,7 @@ const QR = () => {
             onClick={handleGenerateQRCode}
             fullWidth
             className="p-4 mb-4"
+            style={{ fontSize: isMobileOrTablet ? '0.9rem' : '1rem' }} // Responsive font size
           >
             Generate QR Code
           </Button>
@@ -96,20 +108,20 @@ const QR = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <img 
-            src={qrCodeUrl} 
-            alt="Generated QR Code" 
-            style={{ width: '250px', height: '250px' }} 
-            className="mt-4 mb-4 rounded-lg border shadow-lg" 
+          <img
+            src={qrCodeUrl}
+            alt="Generated QR Code"
+            style={{ width: isMobileOrTablet ? '200px' : '250px', height: 'auto' }} // Responsive image size
+            className="mt-4 mb-4 rounded-lg border shadow-lg"
           />
-          <div className="flex justify-center gap-4">
+          <div className={`flex flex-col ${isMobileOrTablet ? 'gap-2' : 'gap-4'} justify-center`}>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 variant="contained"
                 color="success"
                 onClick={handleDownloadPDF}
                 className="p-4"
-                style={{ width: '200px' }}  
+                style={{ width: '200px', fontSize: isMobileOrTablet ? '0.9rem' : '1rem' }} // Responsive font size
               >
                 Download as PDF
               </Button>
@@ -121,7 +133,7 @@ const QR = () => {
                 color="secondary"
                 onClick={handleGenerateNew}
                 className="p-4"
-                style={{ width: '200px' }} 
+                style={{ width: '200px', fontSize: isMobileOrTablet ? '0.9rem' : '1rem' }} // Responsive font size
               >
                 Generate New
               </Button>

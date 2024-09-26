@@ -1,17 +1,23 @@
 import { Element } from "react-scroll";
-import { links, logos } from "../constants/index.jsx";
+import { links } from "../constants/index.jsx";
 import { Marker } from "../components/Marker.jsx";
+import { useMediaQuery } from '@mui/material'; // Import useMediaQuery for responsive design
 
 const Download = () => {
+  // Media queries for responsive design
+  const isExtraSmall = useMediaQuery('(max-width:600px)');  // Phones and below
+  const isSmall = useMediaQuery('(max-width:768px)');       // Portrait tablets, large phones
+  const isMobileOrTablet = isSmall || isExtraSmall;
+
   return (
     <section>
       <Element
         name="download"
-        className="g7 relative pb-32 pt-24 max-lg:pb-24 max-md:py-16"
+        className={`g7 relative pb-32 pt-24 ${isMobileOrTablet ? 'pb-24 py-16' : ''}`}
       >
         <div className="container">
-          <div className="flex items-center">
-            <div className="relative mr-6 flex-540 max-xl:flex-280 max-lg:flex256 max-md:flex-100">
+          <div className={`flex ${isMobileOrTablet ? 'flex-col items-center' : 'items-center'}`}>
+            <div className={`relative mr-6 flex-540 ${isMobileOrTablet ? 'max-lg:flex-100' : 'max-xl:flex-280 max-lg:flex-256'}`}>
               <div className="mb-10">
                 <img
                   src="../../public/favicon.ico"
@@ -21,12 +27,11 @@ const Download = () => {
                 />
               </div>
 
-              <p className="body-1 mb-10 max-w-md">
-                Try it now for free on iOS, Android, PC, Web - whatever your
-                flavor, we've got you covered.
+              <p className={`body-1 mb-10 max-w-md ${isMobileOrTablet ? 'text-center' : ''}`}>
+                Try it now for free on iOS, Android, PC, Web - whatever your flavor, we've got you covered.
               </p>
 
-              <ul className="flex flex-wrap items-center gap-6">
+              <ul className={`flex flex-wrap mb-4 items-center gap-6 ${isMobileOrTablet ? 'justify-center' : ''}`}>
                 {links.map(({ id, url, icon }) => (
                   <li
                     key={id}
@@ -51,28 +56,47 @@ const Download = () => {
               </ul>
             </div>
 
-            <div className="mb-10 max-md:hidden">
-              <div className="download_preview-before download_preview-after rounded-40 relative w-[955px] border-2 border-s5 p-6">
-                <div className="relative rounded-3xl bg-s1 px-6 pb-6 pt-14">
-                  <span className="download_preview-dot left-6 bg-p2" />
-                  <span className="download_preview-dot left-11 bg-s3" />
-                  <span className="download_preview-dot left-16 bg-p1/15" />
+            {!isMobileOrTablet && (
+              <div className="mb-10 max-md:hidden">
+                <div className="download_preview-before download_preview-after rounded-40 relative w-[955px] border-2 border-s5 p-6">
+                  <div className="relative rounded-3xl bg-s1 px-6 pb-6 pt-14">
+                    <span className="download_preview-dot left-6 bg-p2" />
+                    <span className="download_preview-dot left-11 bg-s3" />
+                    <span className="download_preview-dot left-16 bg-p1/15" />
 
+                    <img
+                      src="/images/ss.png"
+                      width={855}
+                      height={655}
+                      alt="screen"
+                      className="rounded-xl"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* For mobile view: Add a preview image */}
+          {isMobileOrTablet && (
+            <div className="mb-10 w-full">
+              <div className="download_preview-before download_preview-after rounded-40 relative w-full border-2 border-s5 p-6">
+                <div className="relative rounded-3xl bg-s1 px-6 pb-6 pt-14">
                   <img
                     src="/images/ss.png"
-                    width={855}
-                    height={655}
+                    width={300} // Adjust width for mobile
+                    height={200} // Adjust height for mobile
                     alt="screen"
-                    className="rounded-xl"
+                    className="rounded-xl w-full h-auto"
                   />
                 </div>
               </div>
             </div>
-          </div>
-
+          )}
         </div>
       </Element>
     </section>
   );
 };
+
 export default Download;

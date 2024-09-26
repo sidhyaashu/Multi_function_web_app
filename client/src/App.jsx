@@ -4,28 +4,32 @@ import Sidebar from "./pages/Sidebar";
 import URL from "./components/URL";
 import DATA from "./components/DATA";
 import QR from "./components/QR";
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <LandingPage />, 
+    element: <LandingPage />,
   },
   {
-    path: "/home", 
-    element: <Sidebar />, 
+    path: "/home",
+    element: <Sidebar />,
     children: [
       {
-        path: "", // This should be an empty string to catch the "/home" route
-        element: <Navigate to="url-to-ss" replace />, // Redirect to url-to-ss
+        path: "",
+        element: <Navigate to="url-to-ss" replace />,
       },
       {
-        path: "url-to-ss", 
+        path: "url-to-ss",
         element: <URL />,
         index: true,
       },
       {
-        path: "random-data-generator", 
+        path: "random-data-generator",
         element: <DATA />,
       },
       {

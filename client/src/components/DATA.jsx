@@ -4,17 +4,22 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import 'tailwindcss/tailwind.css';
+import { useMediaQuery } from '@mui/material'; // Add media query hook
 
 const DATA_FIELDS = [
-  'id', 'name', 'email', 'phone', 'address', 'city', 'state', 'country', 
-  'postalCode', 'job', 'username', 'dateOfBirth', 'company', 'product', 
-  'color', 'quote', 'website', 'userAgent', 'registrationDate', 
-  'isActive', 'description', 'lastLogin', 'favoriteColor', 
-  'title', 'hobbies', 'favoriteNumber', 'bio', 'interests', 'skills', 
+  'id', 'name', 'email', 'phone', 'address', 'city', 'state', 'country',
+  'postalCode', 'job', 'username', 'dateOfBirth', 'company', 'product',
+  'color', 'quote', 'website', 'userAgent', 'registrationDate',
+  'isActive', 'description', 'lastLogin', 'favoriteColor',
+  'title', 'hobbies', 'favoriteNumber', 'bio', 'interests', 'skills',
   'subscriptionStatus'
 ];
 
 const DATA = () => {
+  const isExtraSmall = useMediaQuery('(max-width: 600px)');  // Phones and below
+  const isSmall = useMediaQuery('(max-width: 768px)');       // Tablets and large phones
+  const isMobileOrTablet = isSmall || isExtraSmall;
+
   const [selectedFields, setSelectedFields] = useState(
     DATA_FIELDS.reduce((acc, field) => {
       acc[field] = false;
@@ -26,7 +31,7 @@ const DATA = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isInputValid, setIsInputValid] = useState(true); 
+  const [isInputValid, setIsInputValid] = useState(true);
 
   const handleFieldChange = useCallback((field) => {
     setSelectedFields((prevState) => ({
@@ -35,19 +40,18 @@ const DATA = () => {
     }));
   }, []);
 
-  // Effect to validate numRecords input
   useEffect(() => {
     if (numRecords > 100000) {
       showSnackbar('The maximum number of records allowed is 100,000.');
       setIsInputValid(false);
     } else {
-      setIsInputValid(true); 
+      setIsInputValid(true);
     }
   }, [numRecords]);
 
   const handleGenerateData = useCallback(async () => {
     const isAnyFieldSelected = Object.values(selectedFields).some(Boolean);
-    
+
     if (!isAnyFieldSelected) {
       showSnackbar('Please select at least one field to generate data.');
       return;
@@ -108,7 +112,7 @@ const DATA = () => {
           checked={selectedFields[field]}
           onChange={() => handleFieldChange(field)}
           className="mr-2 cursor-pointer"
-          aria-label={`Select ${field}`} 
+          aria-label={`Select ${field}`}
         />
         <label htmlFor={field} className="text-sm">{field}</label>
       </div>
@@ -116,22 +120,26 @@ const DATA = () => {
   ), [selectedFields, handleFieldChange]);
 
   return (
-    <div className="max-w-full mx-auto p-6">
-      <h1 className="text-4xl font-bold mb-6 text-blue-700 font-roboto">Generate Random Data</h1>
+    <div className={`max-w-full mx-auto p-6 ${isMobileOrTablet ? 'p-4' : 'p-6'}`}>
+      <h1 className={`text-4xl font-bold mb-6 ${isMobileOrTablet ? 'text-3xl' : ''} text-blue-700 font-roboto`}>
+        Generate Random Data
+      </h1>
 
       {!showButtons && (
         <form className="mb-6">
-          <label className="block text-lg text-gray-700 mb-2">Number of Records:</label>
+          <label className={`block text-lg text-gray-700 mb-2 ${isMobileOrTablet ? 'text-base' : ''}`}>
+            Number of Records:
+          </label>
           <input
             type="number"
             value={numRecords}
             onChange={(e) => setNumRecords(Number(e.target.value))}
             min="1"
-            max="100000" 
-            className={`w-full p-3 border border-gray-300 rounded mb-4 ${!isInputValid ? 'border-red-500' : ''}`} 
+            max="100000"
+            className={`w-full p-3 border border-gray-300 rounded mb-4 ${!isInputValid ? 'border-red-500' : ''} ${isMobileOrTablet ? 'text-sm' : ''}`}
             aria-label="Number of records"
           />
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className={`grid gap-4 ${isMobileOrTablet ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-4'}`}>
             {fieldCheckboxes}
           </div>
         </form>
@@ -142,7 +150,7 @@ const DATA = () => {
           <CircularProgress />
         </div>
       ) : (
-        <div className="flex justify-center mt-4 space-x-4">
+        <div className={`flex justify-center mt-4 space-x-4 ${isMobileOrTablet ? 'flex-col space-x-0 space-y-4' : ''}`}>
           {showButtons ? (
             <button
               onClick={handleCancelGeneration}
@@ -163,10 +171,10 @@ const DATA = () => {
         </div>
       )}
 
-      <Snackbar 
-        open={snackbarOpen} 
-        autoHideDuration={3000} 
-        onClose={handleSnackbarClose} 
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
         <MuiAlert onClose={handleSnackbarClose} severity="error" elevation={6} variant="filled">
